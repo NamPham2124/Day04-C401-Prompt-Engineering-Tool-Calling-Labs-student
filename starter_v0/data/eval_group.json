@@ -1,7 +1,118 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. 5 single turn + 5 multi turn.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_arxiv_paper_search",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tìm paper trên arXiv về large language model evaluation benchmarks",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "papers", "args": {}}]},
+      "metadata": {"skill": "arxiv_search_routing", "difficulty": "medium", "what_it_tests": "Yêu cầu tìm paper arXiv → dùng papers, không dùng lookup."}
+    },
+    {
+      "id": "G02_company_tool_usage_policy",
+      "phase": "B",
+      "suite": "group",
+      "query": "Theo policy công ty, khi nào nên dùng tool tìm kiếm web thay vì Twitter?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "policy", "args": {"policy_area": "tool_usage"}}]},
+      "metadata": {"skill": "company_policy_tool_usage", "difficulty": "medium", "what_it_tests": "Câu hỏi về policy nội bộ liên quan tool → dùng policy với area=tool_usage."}
+    },
+    {
+      "id": "G03_bill_gates_timeline",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tweet gần đây nhất của Bill Gates về climate change",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "timeline", "args": {"screenname": "BillGates"}}]},
+      "metadata": {"skill": "routing_timeline_name_mapping", "difficulty": "medium", "what_it_tests": "Tweet CỦA Bill Gates → timeline, map tên → handle BillGates."}
+    },
+    {
+      "id": "G04_monthly_news_timeframe",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tin tức về LLM trong tháng này",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "LLM", "topic": "news", "timeframe": "month"}}]},
+      "metadata": {"skill": "arg_timeframe_month", "difficulty": "medium", "what_it_tests": "'tháng này' → timeframe=month."}
+    },
+    {
+      "id": "G05_out_of_scope_translation",
+      "phase": "B",
+      "suite": "group",
+      "query": "Dịch giúp mình đoạn văn sau sang tiếng Anh: Xin chào thế giới",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope_translation", "difficulty": "easy", "what_it_tests": "Yêu cầu dịch thuật ngoài phạm vi research → KHÔNG gọi tool, từ chối."}
+    },
+    {
+      "id": "G06_missing_topic_then_search",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet về chủ đề đó giúp mình"},
+        {"role": "user", "content": "Về Gemini 2.0 ấy"},
+        {"role": "user", "content": "Tìm tweet về Gemini 2.0 thôi"}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "social_search", "args": {"query": "Gemini 2.0"}}]},
+      "metadata": {"skill": "multiturn_clarify_topic", "difficulty": "hard", "what_it_tests": "3 turns: thiếu chủ đề → sau khi bổ sung → social_search với query Gemini 2.0."}
+    },
+    {
+      "id": "G07_switch_to_arxiv",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin tức về transformer architecture trên web"},
+        {"role": "user", "content": "Thôi chuyển sang tìm paper arXiv đi"},
+        {"role": "user", "content": "Vẫn về transformer architecture"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "papers", "args": {}}]},
+      "metadata": {"skill": "multiturn_switch_to_arxiv", "difficulty": "hard", "what_it_tests": "3 turns: chuyển từ web search sang arXiv search, giữ chủ đề transformer architecture."}
+    },
+    {
+      "id": "G08_correct_url",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Đọc bài này: https://openai.com/blog/gpt-4"},
+        {"role": "user", "content": "Nhầm, link này: https://openai.com/blog/gpt-5"},
+        {"role": "user", "content": "Đọc đúng link mới nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "fetch", "args": {"url": "https://openai.com/blog/gpt-5"}}]},
+      "metadata": {"skill": "multiturn_correct_url", "difficulty": "hard", "what_it_tests": "3 turns: sửa URL cũ → dùng URL mới https://openai.com/blog/gpt-5."}
+    },
+    {
+      "id": "G09_change_search_type",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet top về Claude AI"},
+        {"role": "user", "content": "Chuyển sang tìm tweet mới nhất đi"},
+        {"role": "user", "content": "Vẫn về Claude AI"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "social_search", "args": {"query": "Claude AI", "search_type": "Latest"}}]},
+      "metadata": {"skill": "multiturn_change_search_type", "difficulty": "hard", "what_it_tests": "3 turns: chuyển từ Top → Latest, giữ query Claude AI."}
+    },
+    {
+      "id": "G10_confirm_send_multiturn",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Gửi bản tóm tắt này lên Telegram: AI đang phát triển nhanh chóng"},
+        {"role": "user", "content": "Ừ gửi đi"},
+        {"role": "user", "content": "Xác nhận gửi lên Telegram"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "send", "args": {"confirmed": true}}]},
+      "metadata": {"skill": "multiturn_confirm_send", "difficulty": "hard", "what_it_tests": "3 turns: sau xác nhận → gọi send với confirmed=true."}
+    }
+  ]
 }

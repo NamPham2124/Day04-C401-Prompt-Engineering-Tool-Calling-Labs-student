@@ -1,1 +1,5 @@
 version,author,changed_artifact,artifact_version,prompt_hash,tools_hash,reason,hypothesis,metric_before,metric_after,run_file
+v0,team,baseline,v0+p_baseline+t_baseline,baseline_prompt,baseline_tools,Đo hành vi baseline chưa tối ưu,"System prompt cố tình sai (đoán bừa, tự gửi) nên agent sẽ fail phần lớn case",,0.35,runs/v0_B_base.json
+v1,Khôi,system_prompt.md,v1+p_v1+t_baseline,v1_prompt,baseline_tools,Sửa routing rules cơ bản: thêm clarify khi thiếu info + confirm trước send,"Thêm rule hỏi lại khi thiếu handle/URL và xác nhận trước gửi sẽ fix R10 R11 R12",0.35,0.60,runs/v1_B_base.json
+v2,Nam,system_prompt.md + tools.yaml,v2+p_v2+t_v2,v2_prompt,v2_tools,Thêm routing chi tiết tool + cải thiện description,"Phân biệt rõ timeline vs social_search vs lookup + out_of_scope rules sẽ fix R01-R09 R13-R14",0.60,0.80,runs/v2_B_base.json
+v3,team,system_prompt.md + tools.yaml,v3+p_v3+t_v3,v3_prompt,v3_tools,Thêm multi-turn context + parallel calls + arg conventions + thêm tool summarize,"Multi-turn carry context + parallel tool calls + timeframe/search_type mapping sẽ fix M01-M06",0.80,0.95,runs/v3_B_base.json
